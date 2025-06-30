@@ -1,5 +1,5 @@
-XK=0.58
-XM=0.091
+XK=0.58 # XK Light extinction coefficient
+XM=0.091 # Leaf light transmission coefficient
 CK=-0.8
 VPDL=3.0
 QE=0.0645
