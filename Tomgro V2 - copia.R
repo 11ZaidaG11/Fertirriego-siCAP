@@ -3,7 +3,7 @@ library(chron)
 library(PBSmodelling)
 
 
-setwd("~/Dropbox/2023 segundo semestre UNAL/Tomgro model/Codigo/")
+setwd("C:/Users/zaida/OneDrive/Escritorio/Code/Fertirriego-siCAP/")
 rm(list = ls(all = TRUE)) # Delete all info
 
 climfile = 'C99AF1B.txt'
@@ -85,8 +85,6 @@ for(JDAY in 1:NDAYS){
 
       # Acock's model
       TOP = (1-XM)*PMAX + QE*XK*PPFD
-      
-      # PLM2 Plant density
       BOT = (1-XM)*PMAX + QE*XK*PPFD*exp(-XK*PLAR2*PLM2)
       GPF = (PMAX/XK)*log(TOP/BOT)
       
@@ -124,7 +122,7 @@ for(JDAY in 1:NDAYS){
   source('DEVRATE6.R')
   
   # Daily production of biomass
-  # GREF Growth efficiency coefficient
+  # GREF Growth efficiency
   RCDRW = GREF*(GP+CPOOL-RMAINT)
   if(RCDRW<0){
     RCDRW = 0
@@ -154,18 +152,24 @@ for(JDAY in 1:NDAYS){
   TNSF = TNF - TABF
   
   #C location of "aborted" fruits: distal position
-  B=0
+  B = 0
   for(I in 1:NBRUP){
     # if no new frt or less than 2 frt on truss I or no more abortion...
-    if(RCNF[I]==0 || XNFT[I]<=2 || B>=TABNF){dummy=0}else
-    {ABNF[I] = min(4,RCNF[I],TABNF-B,XNFT[I]-2-ABOR[I])
+    if(RCNF[I]==0 || XNFT[I]<=2 || B>=TABNF){
+      dummy = 0
+    } 
+    else {
+    ABNF[I] = min(4,RCNF[I],TABNF-B,XNFT[I]-2-ABOR[I])
     ABNF[I] = max(0,ABNF[I])
     B = B + ABNF[I]
     ABOR[I] = ABOR[I] + ABNF[I]
     NSF[I] = floor(XNFT[I] - ABOR[I]) 
     # attention ceci conduit ? compter 2 fruits avort?s pour ABOR = 1,1 !         
-    if(ABOR[I]<1){dummy=0}else
-    {for(J in c((NSF[I]+1):floor(XNFT[I]))){
+    if(ABOR[I]<1){
+      dummy = 0
+    }
+    else {
+      for(J in c((NSF[I]+1):floor(XNFT[I]))){
       DWF[I,J] = -EPS
     }}}}
   
@@ -175,26 +179,28 @@ for(JDAY in 1:NDAYS){
   
   # *********************************************************
   # outputs
-  results[JDAY,]<-c(DATE,PLSTN,NBLV,NBRU,TDML+CPOOL,TDMS+WSTMI,TDMF,
-                    TDML+TDMS+TDMF+CPOOL+WSTMI,PLAR,TDML,TDML2,TDML2+CPOOL,PLAR2,
-                    PLAR2*10000/((TDML2+CPOOL)/(1.0+FRPT)),
-                    DMMF,DMGF,TNSF,TNF-TNSF,TNMF,TDMF/(TDML+TDMS+TDMF+CPOOL),
-                    GP,RMAINT,GRESP,SOSIR,CPOOL,PTNLVS,PTNSTM,PTNFRT, NBRU, NBRUP,TABNF,TNF,TNSF)
-  
-  # info<-paste(DATE,'days simulated')	
-  # setWinProgressBar(pb, DATE,paste('TOMGRO V.2.0 -',NDAYS,'days to be simulated'),info)
+  results[JDAY,]<-c(
+    DATE,PLSTN,NBLV,NBRU, TDML+CPOOL, TDMS+WSTMI, TDMF,
+    TDML+TDMS+TDMF+CPOOL+WSTMI,PLAR,TDML,TDML2,TDML2+CPOOL,PLAR2,
+    PLAR2*10000/((TDML2+CPOOL)/(1.0+FRPT)),
+    DMMF,DMGF,TNSF,TNF-TNSF,TNMF,TDMF/(TDML+TDMS+TDMF+CPOOL),
+    GP,RMAINT,GRESP,SOSIR,CPOOL,PTNLVS,PTNSTM,PTNFRT, NBRU, NBRUP,TABNF,TNF,TNSF
+  )
   
 }
 # end of daily loop
 # *********************************************************************
 
-dimnames(results)[[2]]<-c('DATE','PLSTN','NBLV','NBRU','TDML+CPOOL','TDMS','TDMF', 'TDML+TDMS+TDMF+CPOOL','PLAR','TDML','TDML2','TDML2+CPOOL','PLAR2',
-                          'PLAR2*10000./((TDML2+CPOOL)/(1.0+FRPT))',
-                          'DMMF','DMGF','TNSF','TNF-TNSF','TNMF','TDMF/(TDML+TDMS+TDMF+CPOOL)',
-                          'GP','RMAINT','GRESP','SOSIR','CPOOL','PTNLVS','PTNSTM','PTNFRT','NBRU', 'NBRUP','TABNF','TNF','TNSF')
+dimnames(results)[[2]]<-c(
+  'DATE','PLSTN','NBLV','NBRU','TDML+CPOOL','TDMS','TDMF',
+  'TDML+TDMS+TDMF+CPOOL','PLAR','TDML','TDML2','TDML2+CPOOL',
+  'PLAR2','PLAR2*10000./((TDML2+CPOOL)/(1.0+FRPT))','DMMF',
+  'DMGF','TNSF','TNF-TNSF','TNMF','TDMF/(TDML+TDMS+TDMF+CPOOL)',
+  'GP','RMAINT','GRESP','SOSIR','CPOOL','PTNLVS','PTNSTM','PTNFRT',
+  'NBRU', 'NBRUP','TABNF','TNF','TNSF'
+)
+
 write.csv(results,paste(getwd(),'/output_',climfile,'.csv',sep=''),row.names=F)
-
 results2 <- as.data.frame(results)
-
-plot(results2$DATE, results2$PLAR2)
+plot(results2$DATE, results2$GP)
 
